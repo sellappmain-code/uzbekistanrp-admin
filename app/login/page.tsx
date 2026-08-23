@@ -96,7 +96,7 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-6 text-center text-xs text-fg-muted">
-          <Link href={process.env.NEXT_PUBLIC_SITE_URL || "/"} className="underline decoration-border-strong underline-offset-2 hover:text-fg-2">
+          <Link href={process.env.NEXT_PUBLIC_SITE_URL || "https://uzbekistanrp.uz"} className="underline decoration-border-strong underline-offset-2 hover:text-fg-2">
             Ommaviy saytga qaytish
           </Link>
         </p>
