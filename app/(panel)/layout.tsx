@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   LogOut,
   ChevronRight,
+  Bot,
 } from "lucide-react";
 import { getToken, getUser, clearSession, type AdminUser } from "@/lib/api";
 
@@ -26,6 +27,7 @@ const NAV = [
   { href: "/users", label: "Foydalanuvchilar", icon: Users },
   { href: "/events", label: "Tadbirlar", icon: CalendarDays },
   { href: "/wiki", label: "Wiki", icon: BookOpen },
+  { href: "/ai", label: "AI", icon: Bot },
   { href: "/settings", label: "Sozlamalar", icon: Settings },
 ];
 

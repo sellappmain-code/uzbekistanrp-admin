@@ -83,8 +83,12 @@ export default function EventsPage() {
 
   async function remove(ev: GameEvent) {
     if (!confirm(`"${ev.title}" tadbirini o'chirishni tasdiqlaysizmi?`)) return;
-    await apiDelete(`/events/${ev.slug}`);
-    load();
+    try {
+      await apiDelete(`/events/${ev.slug}`);
+      load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "O'chirishda xatolik");
+    }
   }
 
   return (

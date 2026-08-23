@@ -73,8 +73,12 @@ export default function WikiPage() {
 
   async function remove(a: WikiArticle) {
     if (!confirm(`"${a.title}" maqolasini o'chirishni tasdiqlaysizmi?`)) return;
-    await apiDelete(`/wiki/${a.slug}`);
-    load();
+    try {
+      await apiDelete(`/wiki/${a.slug}`);
+      load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "O'chirishda xatolik");
+    }
   }
 
   return (

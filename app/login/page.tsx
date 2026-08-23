@@ -11,6 +11,8 @@ interface LoginResponse {
   user: AdminUser;
 }
 
+const STAFF_ROLES = ["MODERATOR", "EDITOR", "ADMIN", "SUPER_ADMIN"];
+
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
@@ -27,11 +29,15 @@ export default function LoginPage() {
         usernameOrEmail: username,
         password,
       });
+      if (!STAFF_ROLES.includes(res.user?.role)) {
+        setError("Bu akkauntga admin panelga kirish huquqi yo'q");
+        setLoading(false);
+        return;
+      }
       saveSession(res.token, res.user);
       router.replace("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Kirishda xatolik yuz berdi");
-    } finally {
       setLoading(false);
     }
   }
@@ -90,7 +96,7 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-6 text-center text-xs text-fg-muted">
-          <Link href="http://localhost:3000" className="underline decoration-border-strong underline-offset-2 hover:text-fg-2">
+          <Link href={process.env.NEXT_PUBLIC_SITE_URL || "/"} className="underline decoration-border-strong underline-offset-2 hover:text-fg-2">
             Ommaviy saytga qaytish
           </Link>
         </p>

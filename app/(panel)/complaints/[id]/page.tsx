@@ -28,9 +28,12 @@ export default function ComplaintDetailPage({
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
+  const [error, setError] = useState("");
 
   const load = useCallback(() => {
-    apiGet<Complaint>(`/complaints/${id}`).then(setComplaint).catch(() => {});
+    apiGet<Complaint>(`/complaints/${id}`)
+      .then(setComplaint)
+      .catch((err) => setError(err instanceof Error ? err.message : "Shikoyatni yuklashda xatolik"));
   }, [id]);
 
   useEffect(() => {
@@ -41,12 +44,13 @@ export default function ComplaintDetailPage({
     e.preventDefault();
     if (!reply.trim()) return;
     setSending(true);
+    setError("");
     try {
       await apiPost(`/complaints/${id}/messages`, { content: reply.trim() });
       setReply("");
       load();
-    } catch {
-      /* ignore */
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Xabar yuborishda xatolik. Javob saqlanmadi.");
     } finally {
       setSending(false);
     }
@@ -69,8 +73,14 @@ export default function ComplaintDetailPage({
   }
 
   async function changeStatus(status: string) {
-    await apiPatch(`/complaints/${id}/status`, { status });
-    load();
+    setError("");
+    try {
+      await apiPatch(`/complaints/${id}/status`, { status });
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Statusni o'zgartirishda xatolik");
+      load();
+    }
   }
 
   if (!complaint) {
@@ -83,6 +93,11 @@ export default function ComplaintDetailPage({
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="rounded-card border border-danger/30 bg-danger/10 px-4 py-2.5 text-sm text-danger">
+          {error}
+        </div>
+      )}
       <Link
         href="/complaints"
         className="inline-flex items-center gap-1.5 text-sm text-fg-2 hover:text-fg"

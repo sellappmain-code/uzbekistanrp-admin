@@ -31,6 +31,7 @@ export default function NewsPage() {
   const [filter, setFilter] = useState("All");
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   const [aiBusy, setAiBusy] = useState(false);
 
   const [title, setTitle] = useState("");
@@ -95,26 +96,41 @@ export default function NewsPage() {
   }
 
   async function toggleStatus(post: NewsPost) {
-    const next = post.status === "Published" ? "draft" : "Published";
-    await apiPatch(`/news/${post.slug}/status`, { status: next });
-    load();
+    const next = post.status.toLowerCase() === "published" ? "draft" : "published";
+    setError("");
+    try {
+      await apiPatch(`/news/${post.slug}/status`, { status: next });
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Statusni o'zgartirishda xatolik");
+    }
   }
 
   async function remove(post: NewsPost) {
     if (!confirm(`"${post.title}" yangiligini o'chirishni tasdiqlaysizmi?`)) return;
-    await apiDelete(`/news/${post.slug}`);
-    load();
+    setError("");
+    try {
+      await apiDelete(`/news/${post.slug}`);
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "O'chirishda xatolik");
+    }
   }
 
   const filtered = filter === "All" ? posts : posts.filter((p) => p.status === filter);
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="rounded-card border border-danger/30 bg-danger/10 px-4 py-2.5 text-sm text-danger">
+          {error}
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-fg">Yangiliklar</h1>
           <p className="mt-1 text-sm text-fg-muted">
-            {posts.filter((p) => p.status === "Published").length} ta chop etilgan · jami {posts.length} ta
+            {posts.filter((p) => p.status === "published").length} ta chop etilgan · jami {posts.length} ta
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -219,7 +235,7 @@ export default function NewsPage() {
       )}
 
       <div className="flex flex-wrap gap-2">
-        {["All", "Published", "draft"].map((s) => (
+        {["All", "published", "draft"].map((s) => (
           <button
             key={s}
             onClick={() => setFilter(s)}
@@ -264,7 +280,7 @@ export default function NewsPage() {
                 <div className="flex shrink-0 items-center gap-2">
                   <span
                     className={`rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${
-                      p.status === "Published"
+                      p.status === "published"
                         ? "border-success/30 bg-success/10 text-success"
                         : "border-warning/30 bg-warning/10 text-warning"
                     }`}
@@ -273,10 +289,10 @@ export default function NewsPage() {
                   </span>
                   <button
                     onClick={() => toggleStatus(p)}
-                    title={p.status === "Published" ? "Chop etishni to'xtatish" : "Chop etish"}
+                    title={p.status === "published" ? "Chop etishni to'xtatish" : "Chop etish"}
                     className="rounded-lg border border-border p-2 text-fg-2 transition-colors hover:border-info/40 hover:text-info"
                   >
-                    {p.status === "Published" ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {p.status === "published" ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                   <button
                     onClick={() => remove(p)}

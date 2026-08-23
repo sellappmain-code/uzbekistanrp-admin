@@ -21,13 +21,14 @@ export default function UsersPage() {
   const [roles, setRoles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<number | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     (async () => {
       try {
         setUsers(await apiGet<UserDto[]>("/admin/users"));
-      } catch {
-        /* ignore */
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Foydalanuvchilarni yuklashda xatolik");
       }
       try {
         setRoles((await apiGet<{ roles: string[] }>("/admin/roles")).roles);
@@ -39,12 +40,19 @@ export default function UsersPage() {
   }, []);
 
   async function changeRole(user: UserDto, role: string) {
+    if (
+      role === "SUPER_ADMIN" &&
+      !window.confirm(`DIQQAT: "${user.username}" ga SUPER_ADMIN berilsa, u barcha tizimni boshqara oladi. Davom etasizmi?`)
+    ) {
+      return;
+    }
     setSavingId(user.id);
+    setError("");
     try {
       const updated = await apiPatch<UserDto>(`/admin/users/${user.id}/role`, { role });
       setUsers((prev) => prev.map((u) => (u.id === user.id ? updated : u)));
-    } catch {
-      /* ignore */
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Rolni o'zgartirishda xatolik. O'zgarish saqlanmadi.");
     } finally {
       setSavingId(null);
     }
@@ -56,6 +64,12 @@ export default function UsersPage() {
         <h1 className="text-2xl font-semibold text-fg">Foydalanuvchilar</h1>
         <p className="mt-1 text-sm text-fg-muted">Jami {users.length} ta akkaunt</p>
       </div>
+
+      {error && (
+        <p className="rounded-card border border-danger/30 bg-danger/10 px-4 py-2.5 text-sm text-danger">
+          {error}
+        </p>
+      )}
 
       {loading ? (
         <p className="py-10 text-center text-sm text-fg-muted">Yuklanmoqda...</p>
